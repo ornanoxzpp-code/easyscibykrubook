@@ -131,10 +131,10 @@ header {
 .seat[data-status="booked"] {
     background-color: #c62828; 
     border-color: #8b0000;
-    cursor: not-allowed;
+    cursor: not-allowed; /* ⚠️ นี่คือการบอกเบราว์เซอร์ว่ากดไม่ได้ */
     box-shadow: 0 0 8px rgba(139, 0, 0, 0.8); 
     transform: scale(1.0); 
-    position: relative; /* ต้องมี position: relative เพื่อให้ชื่อแสดงผลได้ */
+    position: relative; 
 }
 
 /* แสดงชื่อผู้จองเมื่อนำเมาส์ไปวาง */
