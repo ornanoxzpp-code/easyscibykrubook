@@ -1,167 +1,75 @@
-document.addEventListener('DOMContentLoaded', () => {
+// ⚠️ แก้ไขแล้ว: ใช้ Sheet ID ที่คุณให้มาโดยตรง
+const TARGET_SPREADSHEET_ID = '1r-PhSbtl4cEyhyjtxV5pN2isge0OrUhazXpchkYjuTSgrXWOY9GeM7ln'; 
+
+// กำหนดชื่อของ Sheet ที่รับ Form Submission (ถ้าไม่ได้เปลี่ยนชื่อจะเป็น 'คำตอบของฟอร์ม 1')
+const SHEET_NAME = 'คำตอบของฟอร์ม 1'; 
+
+// กำหนด Index ของคอลัมน์ใน Sheet 
+// [Timestamp(1), Name(2), Nickname(3), Class(4), DeskID(5), SeatID(6)]
+const DESK_ID_COL = 5; 
+const SEAT_ID_COL = 6; 
+const NAME_COL = 2;    
+
+/**
+ * ฟังก์ชันนี้ทำหน้าที่เป็น Web API สำหรับดึงสถานะการจอง
+ */
+function doGet() {
+  // เปิด Spreadsheet โดยใช้ ID ที่ระบุ
+  try {
+    const spreadsheet = SpreadsheetApp.openById(TARGET_SPREADSHEET_ID);
+    const sheet = spreadsheet.getSheetByName(SHEET_NAME);
+
+    if (!sheet) {
+      return ContentService.createTextOutput(JSON.stringify({ error: `Sheet named ${SHEET_NAME} not found.` }))
+                           .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // อ่านข้อมูลทั้งหมด ยกเว้นแถวหัวตาราง (Header Row)
+    const range = sheet.getDataRange();
+    const values = range.getValues();
     
-    // *** 1. CONFIG: URL และ Field ID ***
-    
-    // ⚠️ แก้ไขแล้ว: ใช้ URL Web App ที่คุณให้มา ⚠️
-    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyt8C7tftX-qWM0EOIg1qhMj4VDFKdKfNezwFBqFbY/exec'; 
-    
-    const GOOGLE_FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSfbqhpkecUg_ybrdvx8II20s-f_WCEu4H0BmbvJWgtBaMO5wA/formResponse'; 
-    
-    const FIELD_ID = {
-        deskId: 'entry.1171635782',    
-        seatId: 'entry.1575781351',     
-    };
-    // ***************************************************************
-    
-    const seats = document.querySelectorAll('.seat'); 
-    const modal = document.getElementById('booking-modal');
-    const closeButton = document.querySelector('.close-button');
-    const bookingForm = document.getElementById('booking-form');
-    const currentDeskInfo = document.getElementById('current-desk-info');
-    let selectedSeat = null; 
-    
-    window.submitted = false; 
+    if (values.length <= 1) {
+      // ไม่มีข้อมูลการจอง
+      return ContentService.createTextOutput(JSON.stringify({ bookedSeats: [] }))
+                           .setMimeType(ContentService.MimeType.JSON);
+    }
 
-    // ฟังก์ชัน: อัปเดตสถานะที่นั่งตามข้อมูลที่ได้รับ
-    const updateSeatStatus = (bookedSeatsData) => {
-        const bookedMap = new Map();
-        
-        // สร้าง Map เพื่อหาข้อมูลได้เร็วขึ้น
-        bookedSeatsData.forEach(item => {
-            bookedMap.set(item.fullSeatId, item.name);
-        });
+    // ประมวลผลข้อมูลการจอง
+    const bookedSeats = [];
+    // เริ่มจากแถวที่ 1 (index 1) เพื่อข้าม Header Row
+    for (let i = 1; i < values.length; i++) {
+      const row = values[i];
+      
+      const deskId = row[DESK_ID_COL - 1];
+      const seatId = row[SEAT_ID_COL - 1];
+      const name = row[NAME_COL - 1];
 
-        seats.forEach(seat => {
-            const seatId = seat.getAttribute('data-seat-id'); // เช่น "1.1"
+      if (deskId && seatId) { 
+         bookedSeats.push({
+             fullSeatId: deskId + '.' + seatId, 
+             name: name 
+         });
+      }
+    }
 
-            if (bookedMap.has(seatId)) {
-                // ที่นั่งถูกจองแล้ว
-                const name = bookedMap.get(seatId);
-                seat.setAttribute('data-status', 'booked');
-                seat.setAttribute('title', `จองโดย: ${name}`);
-            } else {
-                // ที่นั่งว่าง
-                seat.setAttribute('data-status', 'available');
-                seat.setAttribute('title', 'ว่าง');
-            }
-        });
-    };
+    // ส่งข้อมูลกลับไปในรูปแบบ JSON
+    return ContentService.createTextOutput(JSON.stringify({ bookedSeats: bookedSeats }))
+                         .setMimeType(ContentService.MimeType.JSON)
+                         .setCors(getOrigins()); 
 
-    // ฟังก์ชัน: ดึงสถานะการจองทั้งหมดจาก Google Apps Script
-    const fetchSeatStatus = async () => {
-        try {
-            // ดึงข้อมูลจาก Web App URL ที่คุณให้มา
-            const response = await fetch(WEB_APP_URL, { method: 'GET' });
-            if (!response.ok) throw new Error('Network response was not ok');
-            
-            const data = await response.json();
-            
-            if (data.bookedSeats) {
-                updateSeatStatus(data.bookedSeats);
-                console.log('Seat status updated successfully.');
-            } else {
-                console.error("No bookedSeats data received.");
-            }
-        } catch (error) {
-            console.error('Error fetching seat status:', error);
-        }
-    };
+  } catch (e) {
+     return ContentService.createTextOutput(JSON.stringify({ error: `Error accessing spreadsheet: ${e.toString()}` }))
+                           .setMimeType(ContentService.MimeType.JSON);
+  }
+}
 
-    // ----------------------------------------------------
-    // เริ่มต้น: ดึงสถานะที่นั่งเมื่อโหลดหน้าเว็บ
-    // ----------------------------------------------------
-    fetchSeatStatus(); 
-
-
-    // ฟังก์ชันจัดการเมื่อการส่งข้อมูลสำเร็จ (ถูกเรียกจาก iframe ใน index.html)
-    window.handleSuccessfulSubmission = function() {
-        if (selectedSeat) {
-            const name = document.getElementById('name').value.trim();
-            const seatId = selectedSeat.getAttribute('data-seat-id');
-            
-            // อัปเดตสถานะการจองใน UI ทันที 
-            selectedSeat.setAttribute('data-status', 'booked');
-            selectedSeat.setAttribute('title', `จองโดย: ${name}`);
-            
-            alert(`🎉 การจองที่นั่งสำเร็จ!`);
-            closeModal();
-        }
-    };
-
-
-    // 1. จัดการการคลิกที่ที่นั่ง 
-    seats.forEach(seat => {
-        seat.addEventListener('click', (e) => {
-            e.stopPropagation(); 
-            
-            if (seat.getAttribute('data-status') === 'booked') {
-                alert('ที่นั่งนี้ถูกจองแล้ว! กรุณาเลือกที่นั่งอื่น');
-                return;
-            }
-            try {
-                selectedSeat = seat;
-                const seatId = selectedSeat.getAttribute('data-seat-id'); 
-                const deskId = selectedSeat.closest('.desk').getAttribute('data-desk-id'); 
-
-                currentDeskInfo.textContent = `โต๊ะที่ ${deskId} ตำแหน่ง ${seatId}`;
-                modal.style.display = 'block';
-
-            } catch (error) {
-                console.error("เกิดข้อผิดพลาดในการดึงข้อมูลโต๊ะ/ที่นั่ง:", error);
-                alert("ไม่สามารถเปิดฟอร์มจองได้");
-            }
-        });
-    });
-
-    const closeModal = () => {
-        modal.style.display = 'none';
-        bookingForm.reset(); 
-        selectedSeat = null;
-    };
-
-    closeButton.addEventListener('click', closeModal);
-    window.addEventListener('click', (event) => {
-        if (event.target === modal) {
-            closeModal();
-        }
-    });
-
-    // 2. จัดการการส่งฟอร์มจอง
-    bookingForm.addEventListener('submit', (e) => {
-        e.preventDefault(); 
-
-        if (selectedSeat) {
-            const seatId = selectedSeat.getAttribute('data-seat-id');
-            const deskId = selectedSeat.closest('.desk').getAttribute('data-desk-id');
-            
-            // ลบ Hidden Inputs เก่า และสร้างใหม่สำหรับ DeskID และ SeatID เท่านั้น
-            document.querySelectorAll('#booking-form input[type="hidden"]').forEach(el => el.remove());
-
-            // Input สำหรับ DeskID
-            const hiddenDeskId = document.createElement('input');
-            hiddenDeskId.type = 'hidden';
-            hiddenDeskId.name = FIELD_ID.deskId;
-            hiddenDeskId.value = deskId;
-            bookingForm.appendChild(hiddenDeskId);
-            
-            // Input สำหรับ SeatID
-            const hiddenSeatId = document.createElement('input');
-            hiddenSeatId.type = 'hidden';
-            hiddenSeatId.name = FIELD_ID.seatId;
-            hiddenSeatId.value = seatId;
-            bookingForm.appendChild(hiddenSeatId);
-
-            // 2. ตั้งค่า Form เพื่อส่งข้อมูล
-            bookingForm.action = GOOGLE_FORM_URL;
-            bookingForm.method = 'POST';
-            bookingForm.target = 'hidden_iframe';
-            
-            // 3. สั่งให้ Form ส่งข้อมูล
-            window.submitted = true;
-            
-            setTimeout(() => {
-                bookingForm.submit(); 
-            }, 50);
-        }
-    });
-});
+/**
+ * อนุญาตให้เว็บไซต์ใดๆ เรียกใช้ API นี้ได้
+ */
+function getOrigins() {
+  return [
+    'https://script.google.com', 
+    'https://docs.google.com', 
+    '*' // ใช้ wildcard เพื่อให้มั่นใจว่า GitHub Pages เข้าถึงได้
+  ];
+}
