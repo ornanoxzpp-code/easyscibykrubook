@@ -16,32 +16,47 @@ document.addEventListener('DOMContentLoaded', () => {
     const modal = document.getElementById('booking-modal');
     const closeButton = document.querySelector('.close-button');
     const bookingForm = document.getElementById('booking-form');
-    const currentDeskInfo = document.getElementById('current-desk-info');
-    let selectedSeat = null; 
     
-    // ตัวแปรสำหรับตรวจสอบสถานะการส่งฟอร์ม (ใช้กับ iframe)
+    // New: องค์ประกอบสำหรับ Modal 2 ขั้นตอน
+    const transferDetails = document.getElementById('transfer-details');
+    const bookingFormArea = document.getElementById('booking-form-area');
+    const nextToFormButton = document.getElementById('next-to-form');
+    const backToDetailsButton = document.getElementById('back-to-details');
+    const currentDeskInfoStep1 = document.getElementById('current-desk-info-step1');
+    const currentDeskInfoStep2 = document.getElementById('current-desk-info-step2');
+    
+    let selectedSeat = null; 
     window.submitted = false; 
 
-    // ฟังก์ชันจัดการเมื่อการส่งข้อมูลสำเร็จ (เมื่อ iframe โหลดเสร็จ)
+    // ฟังก์ชันจัดการเมื่อการส่งข้อมูลสำเร็จ 
     window.handleSuccessfulSubmission = function() {
         if (selectedSeat) {
             alert(`🎉 การจองที่นั่งถูกบันทึกใน Google Sheet แล้ว!`);
             closeModal();
-            // แจ้งเตือนให้ทราบว่าต้องอัปเดตสถานะด้วยมือ
-            alert('⚠️ การจองสำเร็จแล้ว โปรดรอคุณครูตรวจสอบ เพื่อทำการให้ที่นั่งเปลี่ยนเป็นสีแดง');
+            alert('⚠️ การจองสำเร็จแล้ว รอคุณครูตรวจสอบข้อมูล เพื่อให้ที่นั่งเปลี่ยนเป็นสีแดงและทำการลงชื่อการจองของนักเรียนในภายหลัง');
         }
     };
 
+    // ฟังก์ชันปิด Modal และรีเซ็ตกลับไปหน้าแรก (รายละเอียดการโอนเงิน)
+    const closeModal = () => {
+        modal.style.display = 'none';
+        bookingForm.reset(); 
+        selectedSeat = null;
+        
+        // รีเซ็ต Modal กลับไปหน้า Step 1
+        bookingFormArea.style.display = 'none';
+        transferDetails.style.display = 'block';
+    };
 
-    // 1. จัดการการคลิกที่ที่นั่ง (ฟังก์ชันหลักที่เปิด/บล็อก Pop-up)
+    // 1. จัดการการคลิกที่ที่นั่ง (ฟังก์ชันหลักที่เปิด Modal)
     seats.forEach(seat => {
         seat.addEventListener('click', (e) => {
             e.stopPropagation(); 
             
-            // 🚨 การบล็อกการจอง: ถ้าสถานะเป็น booked จะเตือนและออกทันที
+            // 🚨 บล็อกการจอง: ถ้าสถานะเป็น booked จะเตือนและออกทันที
             if (seat.getAttribute('data-status') === 'booked') {
                 alert('ที่นั่งนี้ถูกจองแล้ว! กรุณาเลือกที่นั่งอื่น');
-                return; // บรรทัดนี้จะหยุดการทำงานทั้งหมด
+                return; 
             }
             
             // ถ้าไม่ใช่ booked (คือ available) ให้ดำเนินการเปิดฟอร์ม
@@ -51,7 +66,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 const deskId = selectedSeat.closest('.desk').getAttribute('data-desk-id'); 
 
                 // แสดงข้อมูลใน Pop-up และเปิด Modal
-                currentDeskInfo.textContent = `โต๊ะที่ ${deskId} ตำแหน่ง ${seatId}`;
+                const deskInfo = `โต๊ะที่ ${deskId} ตำแหน่ง ${seatId}`;
+                currentDeskInfoStep1.textContent = deskInfo;
+                currentDeskInfoStep2.textContent = deskInfo;
+                
                 modal.style.display = 'block';
 
             } catch (error) {
@@ -60,14 +78,21 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     });
+    
+    // New: จัดการการคลิกปุ่ม 'ไปยังแบบฟอร์มจอง' (Step 1 -> Step 2)
+    nextToFormButton.addEventListener('click', () => {
+        transferDetails.style.display = 'none';
+        bookingFormArea.style.display = 'block';
+    });
+    
+    // New: จัดการการคลิกปุ่ม 'กลับไปดูรายละเอียดการโอนเงิน' (Step 2 -> Step 1)
+    backToDetailsButton.addEventListener('click', () => {
+        bookingFormArea.style.display = 'none';
+        transferDetails.style.display = 'block';
+    });
 
-    // ฟังก์ชันปิด Modal
-    const closeModal = () => {
-        modal.style.display = 'none';
-        bookingForm.reset(); 
-        selectedSeat = null;
-    };
 
+    // Event Listeners สำหรับปิด Modal
     closeButton.addEventListener('click', closeModal);
     window.addEventListener('click', (event) => {
         if (event.target === modal) {
@@ -75,10 +100,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // 2. จัดการการส่งฟอร์มจอง
+    // 2. จัดการการส่งฟอร์มจอง (ส่งข้อมูลไปยัง Google Form)
     bookingForm.addEventListener('submit', (e) => {
         e.preventDefault(); 
-
+        
+        // โค้ดส่งฟอร์มเหมือนเดิม (ใช้ Field ID ที่แก้ไขแล้วใน HTML)
         if (selectedSeat) {
             const seatId = selectedSeat.getAttribute('data-seat-id');
             const deskId = selectedSeat.closest('.desk').getAttribute('data-desk-id');
