@@ -1,0 +1,219 @@
+/* --- โครงสร้างพื้นฐานและธีมโรงเรียน --- */
+body {
+    font-family: 'Sukhumvit Set', 'Tahoma', sans-serif;
+    background-color: #f0f4f7;
+    color: #333;
+    margin: 0;
+    padding: 0;
+}
+
+header {
+    background-color: #2e7d32;
+    color: white;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.study-room-layout {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px;
+}
+
+/* --- กระดาน (Chalkboard) --- */
+.chalkboard {
+    width: 90%;
+    max-width: 800px;
+    background-color: #004d40;
+    color: #ccff90;
+    border: 15px solid #795548;
+    padding: 20px;
+    margin-bottom: 50px;
+    text-align: center;
+    box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.3);
+    border-radius: 5px;
+}
+
+.chalkboard h2 {
+    font-family: cursive, sans-serif;
+    margin-top: 0;
+    font-size: 2.5em;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+/* --- การจัดวางโต๊ะ 2 ฝั่งยาว --- */
+#desk-container {
+    display: flex; 
+    justify-content: center;
+    align-items: flex-start;
+    gap: 0;
+    max-width: 900px; 
+    padding: 30px;
+    border: 1px dashed #ccc;
+    background-color: #ffffff;
+}
+
+.desk-column {
+    display: flex;
+    flex-direction: column;
+    gap: 35px;
+    padding: 0 20px;
+}
+
+.aisle-center {
+    width: 100px; 
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: #607d8b;
+    border-left: 2px dashed #b0bec5;
+    border-right: 2px dashed #b0bec5;
+    background-color: #eceff1;
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    transform: rotate(180deg);
+    padding: 10px 0;
+    min-height: 500px;
+}
+
+/* --- รูปแบบของโต๊ะ (Desk UI) --- */
+.desk {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-around;
+    width: 180px; 
+    height: 120px; 
+    background-color: #a1887f;
+    border: 7px solid #795548;
+    border-radius: 10px;
+    position: relative;
+    box-shadow: 3px 3px 5px rgba(0, 0, 0, 0.2);
+    padding-top: 10px;
+}
+
+/* คอนเทนเนอร์สำหรับที่นั่ง 3 ตัว (ทำให้เป็นแถวแนวนอน) */
+.desk .seat-group {
+    display: flex; 
+    gap: 15px; 
+    margin-bottom: 5px;
+}
+
+.desk-label {
+    position: absolute;
+    bottom: -30px;
+    font-size: 15px;
+    font-weight: bold;
+    color: #333;
+}
+
+/* --- รูปแบบของที่นั่ง (Seat UI) --- */
+.seat {
+    width: 30px;
+    height: 30px;
+    background-color: #cfd8dc; 
+    border-radius: 50%;
+    border: 2px solid #90a4ae;
+    cursor: pointer; 
+    transition: all 0.3s ease-in-out; 
+}
+
+/* Animation: ที่นั่งว่างที่รอการจอง */
+.seat[data-status="available"]:hover {
+    transform: scale(1.2);
+    box-shadow: 0 0 10px #4CAF50;
+}
+
+/* --- สถานะจองแล้ว (Booked State) สำหรับ ที่นั่ง (สีแดง) --- */
+.seat[data-status="booked"] {
+    background-color: #c62828; 
+    border-color: #8b0000;
+    cursor: not-allowed;
+    box-shadow: 0 0 8px rgba(139, 0, 0, 0.8); 
+    transform: scale(1.0); 
+}
+
+/* --- Popup Modal และ Animation (ส่วนควบคุมฟอร์ม) --- */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 100;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    animation: fadeIn 0.3s;
+}
+
+.modal-content {
+    background-color: #ffffff;
+    margin: 10% auto;
+    padding: 30px;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 450px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+    position: relative;
+    animation: slideDown 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.close-button {
+    color: #aaa;
+    float: right;
+    font-size: 32px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+/* ฟอร์ม */
+#booking-form label {
+    display: block;
+    margin-top: 15px;
+    font-weight: bold;
+    color: #4CAF50;
+}
+
+#booking-form input[type="text"] {
+    width: 100%;
+    padding: 12px;
+    margin-top: 8px;
+    box-sizing: border-box;
+    border: 2px solid #ddd;
+    border-radius: 6px;
+    transition: border-color 0.3s;
+}
+
+.book-button {
+    background-color: #4CAF50;
+    color: white;
+    padding: 15px 20px;
+    margin-top: 30px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    width: 100%;
+    font-size: 16px;
+    font-weight: bold;
+    transition: background-color 0.3s, transform 0.2s;
+}
+
+.book-button:hover {
+    background-color: #45a049;
+    transform: scale(1.01);
+}
+
+/* Animation Keyframes */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideDown {
+    from { transform: translateY(-100px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
