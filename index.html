@@ -20,7 +20,6 @@
         </div>
 
         <div id="desk-container">
-            
             <div class="desk-column" id="column-left">
                 
                 <div class="desk" data-desk-id="1">
@@ -127,29 +126,60 @@
     <div id="booking-modal" class="modal">
         <div class="modal-content">
             <span class="close-button">&times;</span>
-            <h2>ฟอร์มจองที่นั่งเรียน</h2>
-            <p>คุณกำลังจะจอง **<span id="current-desk-info"></span>**</p>
-            <form id="booking-form">
+            
+            <div id="transfer-details">
+                <h2>ขั้นตอนที่ 1: ชำระเงินค่าจองที่นั่ง</h2>
+                <p>คุณกำลังจะจองที่นั่ง **<span id="current-desk-info-step1"></span>** กรุณาโอนเงินตามรายละเอียดด้านล่างนี้ก่อนดำเนินการต่อ:</p>
+
+                <div class="payment-info" style="
+                    border: 2px dashed #4CAF50; 
+                    padding: 15px; 
+                    margin: 20px 0; 
+                    background-color: #e8f5e9; 
+                    border-radius: 8px;">
+                    
+                    <h3 style="color: #2e7d32; margin-top: 0;">รายละเอียดบัญชีโอนเงิน</h3>
+                    
+                    <p><strong>ชื่อบัญชี:</strong> นางสาว จุฑาทิพย์ นามสีฐาน</p>
+                    <p><strong>ธนาคาร:</strong> กรุงไทย</p>
+                    <p><strong>เลขที่บัญชี:</strong> เลขบัญชีหมูอ้วน</p>
+                    <p><strong>เลขพร้อมเพย์:</strong> 0842629363</p>
+                    <p style="font-size: 1.1em; font-weight: bold; color: #c62828;">**จำนวนเงิน:** [ระบุจำนวนเงิน] บาท</p>
+                    
+                </div>
                 
-                <label for="name">ชื่อจริง:</label>
-                <input type="text" id="name" name="entry.2119879183" required> 
-
-                <label for="nickname">ชื่อเล่น:</label>
-                <input type="text" id="nickname" name="entry.1744498140" required>
-
-                <label for="class-room">ชั้นและห้อง:</label>
-                <input type="text" id="class-room" name="entry.1296537747" placeholder="ตัวอย่าง: ม.5/2" required>
-
-                <hr style="margin: 20px 0; border-top: 1px dashed #ddd;">
+                <p>เมื่อโอนเงินเรียบร้อยแล้ว ให้คลิกปุ่ม **"ไปยังแบบฟอร์มจอง"**</p>
+                <button type="button" id="next-to-form" class="book-button">ไปยังแบบฟอร์มจอง &rarr;</button>
+            </div>
+            
+            <div id="booking-form-area" style="display:none;">
+                <h2>ขั้นตอนที่ 2: ฟอร์มยืนยันการจอง</h2>
+                <p>คุณกำลังจะจอง **<span id="current-desk-info-step2"></span>** กรุณากรอกข้อมูลและ **เลขที่รายการโอนเงิน**</p>
                 
-                <label for="transfer-id">เลขที่รายการโอนเงิน:</label>
-                <input type="text" id="transfer-id" name="entry.1417419188" required> 
+                <form id="booking-form">
+                    
+                    <label for="name">ชื่อจริง:</label>
+                    <input type="text" id="name" name="entry.2119879183" required> 
 
-                <label for="amount">จำนวนเงินที่โอน (บาท):</label>
-                <input type="text" id="amount" name="entry.767184292" required>
-                
-                <button type="submit" class="book-button">ยืนยันการจอง</button>
-            </form>
+                    <label for="nickname">ชื่อเล่น:</label>
+                    <input type="text" id="nickname" name="entry.1744498140" required>
+
+                    <label for="class-room">ชั้นและห้อง:</label>
+                    <input type="text" id="class-room" name="entry.1296537747" placeholder="ตัวอย่าง: ม.5/2" required>
+
+                    <hr style="margin: 20px 0; border-top: 1px dashed #ddd;">
+                    
+                    <label for="transfer-id">เลขที่รายการโอนเงิน:</label>
+                    <input type="text" id="transfer-id" name="entry.1417419188" required> 
+
+                    <label for="amount">จำนวนเงินที่โอน (บาท):</label>
+                    <input type="text" id="amount" name="entry.767184292" required>
+                    
+                    <button type="submit" class="book-button">ยืนยันการจอง</button>
+                    <button type="button" id="back-to-details" class="back-button" style="margin-top: 10px;">&larr; กลับไปดูรายละเอียดการโอนเงิน</button>
+                </form>
+            </div>
+            
         </div>
     </div>
 
