@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // *** CONFIG: Google Form URL และ Field ID ***
     
-    // โค้ดนี้ถูกปรับให้ส่งข้อมูลอย่างเดียว ไม่มีการดึงสถานะกลับมา 
+    // URL สำหรับส่งข้อมูล Google Form
     const GOOGLE_FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSfbqhpkecUg_ybrdvx8II20s-f_WCEu4H0BmbvJWgtBaMO5wA/formResponse'; 
     
     const FIELD_ID = {
@@ -11,6 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     // ********************************************
     
+    // เลือกองค์ประกอบทั้งหมดที่ใช้ในการทำงาน
     const seats = document.querySelectorAll('.seat'); 
     const modal = document.getElementById('booking-modal');
     const closeButton = document.querySelector('.close-button');
@@ -18,49 +19,49 @@ document.addEventListener('DOMContentLoaded', () => {
     const currentDeskInfo = document.getElementById('current-desk-info');
     let selectedSeat = null; 
     
+    // ตัวแปรสำหรับตรวจสอบสถานะการส่งฟอร์ม (ใช้กับ iframe)
     window.submitted = false; 
 
-    // ฟังก์ชันจัดการเมื่อการส่งข้อมูลสำเร็จ (เมื่อ Pop-up Form หายไป)
+    // ฟังก์ชันจัดการเมื่อการส่งข้อมูลสำเร็จ (เมื่อ iframe โหลดเสร็จ)
     window.handleSuccessfulSubmission = function() {
         if (selectedSeat) {
-            // **ยกเลิกการอัปเดตสถานะสีแดงใน JS** เพราะคุณจะทำใน HTML แทน
-            
             alert(`🎉 การจองที่นั่งถูกบันทึกใน Google Sheet แล้ว!`);
             closeModal();
-            
-            // แนะนำให้ผู้ใช้รีเฟรชหรือไปแก้ไขสถานะใน HTML
-            alert('⚠️ หมายเหตุ: สถานะสีแดงบนหน้าจอจะไม่เปลี่ยนจนกว่าคุณจะแก้ไขไฟล์ index.html และอัปโหลดใหม่');
+            // แจ้งเตือนให้ทราบว่าต้องอัปเดตสถานะด้วยมือ
+            alert('⚠️ การจองสำเร็จแล้ว แต่คุณต้องแก้ไขไฟล์ index.html และอัปโหลดใหม่ เพื่อให้ที่นั่งเปลี่ยนเป็นสีแดงและบล็อกการจองถาวร');
         }
     };
 
 
-    // 1. จัดการการคลิกที่ที่นั่ง
+    // 1. จัดการการคลิกที่ที่นั่ง (ฟังก์ชันหลักที่เปิด/บล็อก Pop-up)
     seats.forEach(seat => {
         seat.addEventListener('click', (e) => {
             e.stopPropagation(); 
             
-            // 🚨 การบล็อกการจองเกิดขึ้นที่นี่
+            // 🚨 การบล็อกการจอง: ถ้าสถานะเป็น booked จะเตือนและออกทันที
             if (seat.getAttribute('data-status') === 'booked') {
                 alert('ที่นั่งนี้ถูกจองแล้ว! กรุณาเลือกที่นั่งอื่น');
-                return; // ⚠️ บรรทัดนี้คือตัวบล็อกการจอง!
+                return; // บรรทัดนี้จะหยุดการทำงานทั้งหมด
             }
-            // 🚨 จบการบล็อก
-
+            
+            // ถ้าไม่ใช่ booked (คือ available) ให้ดำเนินการเปิดฟอร์ม
             try {
                 selectedSeat = seat;
                 const seatId = selectedSeat.getAttribute('data-seat-id'); 
                 const deskId = selectedSeat.closest('.desk').getAttribute('data-desk-id'); 
 
+                // แสดงข้อมูลใน Pop-up และเปิด Modal
                 currentDeskInfo.textContent = `โต๊ะที่ ${deskId} ตำแหน่ง ${seatId}`;
                 modal.style.display = 'block';
 
             } catch (error) {
-                console.error("เกิดข้อผิดพลาดในการดึงข้อมูลโต๊ะ/ที่นั่ง:", error);
+                console.error("เกิดข้อผิดพลาดในการเปิดฟอร์ม:", error);
                 alert("ไม่สามารถเปิดฟอร์มจองได้");
             }
         });
     });
 
+    // ฟังก์ชันปิด Modal
     const closeModal = () => {
         modal.style.display = 'none';
         bookingForm.reset(); 
@@ -99,12 +100,11 @@ document.addEventListener('DOMContentLoaded', () => {
             hiddenSeatId.value = seatId;
             bookingForm.appendChild(hiddenSeatId);
 
-            // 2. ตั้งค่า Form เพื่อส่งข้อมูล
+            // ตั้งค่า Form เพื่อส่งข้อมูลผ่าน iframe
             bookingForm.action = GOOGLE_FORM_URL;
             bookingForm.method = 'POST';
             bookingForm.target = 'hidden_iframe';
             
-            // 3. สั่งให้ Form ส่งข้อมูล
             window.submitted = true;
             
             setTimeout(() => {
