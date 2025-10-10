@@ -174,5 +174,3 @@ Document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-
-เติมในนี้ให้เลยหน่อย
