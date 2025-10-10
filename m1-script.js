@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     
-    // *** ✅ CONFIG: URL ของ Apps Script ที่คุณ Deploy มาจาก Google Sheet ม.1 ✅ ***
+    // *** ✅ CONFIG: URL ของ Apps Script ที่คุณ Deploy มาจาก Google Sheet ม.1 (อันล่าสุด) ✅ ***
     const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyHjmOv-L_tBH1IqsF1ok2AwdzJ2FfH5N1kdZW8tzO2IfY_qzSHDgVW7fF8s4cG9k2PGQ/exec'; 
     
     // ------------------------------------------------------------------
@@ -29,7 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const response = await fetch(`${APPS_SCRIPT_URL}?callback=handleResponse`);
             const text = await response.text();
 
-            // แยกข้อมูล JSON ออกมา
+            // แยกข้อมูล JSON ออกมา (ตัด callback function name ออก)
             const jsonString = text.substring(text.indexOf('(') + 1, text.lastIndexOf(')'));
             const data = JSON.parse(jsonString);
 
@@ -46,6 +46,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         } catch (error) {
             console.error('เกิดข้อผิดพลาดในการดึงสถานะ:', error);
+            // Alert นี้อาจจะเกิดขึ้นถ้า URL ผิด หรือไฟล์ .js ยังไม่อัปเดต
+            // alert("เกิดข้อผิดพลาดในการเชื่อมต่อ กรุณาตรวจสอบ Apps Script URL"); 
         }
     };
     fetchSeatStatus();
