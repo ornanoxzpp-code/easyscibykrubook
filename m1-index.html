@@ -27,7 +27,7 @@
                     <div class="seat-group">
                         <div class="seat" data-seat-id="1.1" data-status="available"></div>
                         <div class="seat" data-seat-id="1.2" data-status="available"></div>
-                        <div class="seat" data-seat-id="1.3" data-status="booked"></div>
+                        <div class="seat" data-seat-id="1.3" data-status="available"></div>
                     </div>
                     <div class="desk-label">โต๊ะ 1</div>
                 </div>
@@ -142,10 +142,10 @@
                     
                     <h3 style="color: #2e7d32; margin-top: 0;">รายละเอียดบัญชีโอนเงิน</h3>
                     
-                    <p><strong>ชื่อบัญชี:</strong> นางสาวจุฑาทิพย์ นามสีฐาน</p>
-                    <p><strong>ธนาคาร:</strong> กรุงไทย</p>
+                    <p><strong>ชื่อบัญชี:</strong> นางสาว/นาย [ชื่อเจ้าของบัญชี]</p>
+                    <p><strong>ธนาคาร:</strong> [ชื่อธนาคาร]</p>
                     <p><strong>เลขที่บัญชี:</strong> **4010968796**</p>
-                    <p><strong>เลขพร้อมเพย์:</strong> **0842629363**</p>
+                    <p><strong>เลขพร้อมเพย์:</strong> **[ใส่เลขพร้อมเพย์ของคุณ]**</p>
                     <p style="font-size: 1.1em; font-weight: bold; color: #c62828;">**จำนวนเงิน:** 3,000 บาท</p>
                     
                 </div>
@@ -161,18 +161,18 @@
                 <form id="booking-form">
                     
                     <label for="name">ชื่อจริง:</label>
-                    <input type="text" id="name" name="entry.1276399642" required> 
+                    <input type="text" id="name" name="name" required> 
 
                     <label for="nickname">ชื่อเล่น:</label>
-                    <input type="text" id="nickname" name="entry.1189280944" required>
+                    <input type="text" id="nickname" name="nickname" required>
 
                     <label for="class-room">ชั้นและห้อง:</label>
-                    <input type="text" id="class-room" name="entry.695505628" placeholder="ตัวอย่าง: ม.1/2" required>
+                    <input type="text" id="class-room" name="classRoom" placeholder="ตัวอย่าง: ม.1/2" required>
 
                     <hr style="margin: 20px 0; border-top: 1px dashed #ddd;">
                     
                     <label for="amount">จำนวนเงินที่โอน (บาท):</label>
-                    <input type="text" id="amount" name="entry.1968564265" required>
+                    <input type="text" id="amount" name="amount" required>
                     
                     <button type="submit" class="book-button">ยืนยันการจอง</button>
                     <button type="button" id="back-to-details" class="back-button" style="margin-top: 10px;">&larr; กลับไปดูรายละเอียดการโอนเงิน</button>
@@ -181,10 +181,6 @@
             
         </div>
     </div>
-
-    <iframe name="hidden_iframe" id="hidden_iframe" style="display:none;" 
-            onload="if(submitted) { submitted=false; handleSuccessfulSubmission(); }">
-    </iframe>
 
     <script src="m1-script.js"></script>
 </body>
