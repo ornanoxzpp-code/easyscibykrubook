@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบจองที่นั่ง ม.1</title>
+    <link rel="stylesheet" href="styles.css"> 
+</head>
+<body>
+
+    <header>
+        <h1>📚 ระบบจองที่นั่งห้องเรียน ม.1 (3,000 บาท) ✏️</h1>
+    </header>
+
+    <main class="study-room-layout">
+        
+        <div class="chalkboard">
+            <h2>กระดาน</h2>
+            <p>คลิกที่ **ที่นั่งว่าง** เพื่อจองตำแหน่งเรียน</p>
+        </div>
+
+        <div id="desk-container">
+            
+            <div class="desk-column" id="column-left">
+                
+                <div class="desk" data-desk-id="1">
+                    <div class="seat-group">
+                        <div class="seat" data-seat-id="1.1" data-status="available"></div>
+                        <div class="seat" data-seat-id="1.2" data-status="available"></div>
+                        <div class="seat" data-seat-id="1.3" data-status="available"></div>
+                    </div>
+                    <div class="desk-label">โต๊ะ 1</div>
+                </div>
+                
+                <div class="desk" data-desk-id="2">
+                    <div class="seat-group">
+                        <div class="seat" data-seat-id="2.1" data-status="available"></div>
+                        <div class="seat" data-seat-id="2.2" data-status="available"></div>
+                        <div class="seat" data-seat-id="2.3" data-status="available"></div>
+                    </div>
+                    <div class="desk-label">โต๊ะ 2</div>
+                </div>
+                
+                <div class="desk" data-desk-id="3">
+                    <div class="seat-group">
+                        <div class="seat" data-seat-id="3.1" data-status="available"></div>
+                        <div class="seat" data-seat-id="3.2" data-status="available"></div>
+                        <div class="seat" data-seat-id="3.3" data-status="available"></div>
+                    </div>
+                    <div class="desk-label">โต๊ะ 3</div>
+                </div>
+                
+                <div class="desk" data-desk-id="4">
+                    <div class="seat-group">
+                        <div class="seat" data-seat-id="4.1" data-status="available"></div>
+                        <div class="seat" data-seat-id="4.2" data-status="available"></div>
+                        <div class="seat" data-seat-id="4.3" data-status="available"></div>
+                    </div>
+                    <div class="desk-label">โต๊ะ 4</div>
+                </div>
+                
+                <div class="desk" data-desk-id="5">
+                    <div class="seat-group">
+                        <div class="seat" data-seat-id="5.1" data-status="available"></div>
+                        <div class="seat" data-seat-id="5.2" data-status="available"></div>
+                        <div class="seat" data-seat-id="5.3" data-status="available"></div>
+                    </div>
+                    <div class="desk-label">โต๊ะ 5</div>
+                </div>
+                
+            </div>
+
+            <div class="aisle-center">ทางเดินกลางห้อง</div>
+
+            <div class="desk-column" id="column-right">
+                
+                <div class="desk" data-desk-id="6">
+                    <div class="seat-group">
+                        <div class="seat" data-seat-id="6.1" data-status="available"></div>
+                        <div class="seat" data-seat-id="6.2" data-status="available"></div>
+                        <div class="seat" data-seat-id="6.3" data-status="available"></div>
+                    </div>
+                    <div class="desk-label">โต๊ะ 6</div>
+                </div>
+                
+                <div class="desk" data-desk-id="7">
+                    <div class="seat-group">
+                        <div class="seat" data-seat-id="7.1" data-status="available"></div>
+                        <div class="seat" data-seat-id="7.2" data-status="available"></div>
+                        <div class="seat" data-seat-id="7.3" data-status="available"></div>
+                    </div>
+                    <div class="desk-label">โต๊ะ 7</div>
+                </div>
+                
+                <div class="desk" data-desk-id="8">
+                    <div class="seat-group">
+                        <div class="seat" data-seat-id="8.1" data-status="available"></div>
+                        <div class="seat" data-seat-id="8.2" data-status="available"></div>
+                        <div class="seat" data-seat-id="8.3" data-status="available"></div>
+                    </div>
+                    <div class="desk-label">โต๊ะ 8</div>
+                </div>
+                
+                <div class="desk" data-desk-id="9">
+                    <div class="seat-group">
+                        <div class="seat" data-seat-id="9.1" data-status="available"></div>
+                        <div class="seat" data-seat-id="9.2" data-status="available"></div>
+                        <div class="seat" data-seat-id="9.3" data-status="available"></div>
+                    </div>
+                    <div class="desk-label">โต๊ะ 9</div>
+                </div>
+                
+                <div class="desk" data-desk-id="10">
+                    <div class="seat-group">
+                        <div class="seat" data-seat-id="10.1" data-status="available"></div>
+                        <div class="seat" data-seat-id="10.2" data-status="available"></div>
+                        <div class="seat" data-seat-id="10.3" data-status="available"></div>
+                    </div>
+                    <div class="desk-label">โต๊ะ 10</div>
+                </div>
+                
+            </div>
+
+        </div>
+    </main>
+
+    <div id="booking-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            
+            <div id="transfer-details">
+                <h2>ขั้นตอนที่ 1: ชำระเงินค่าจองที่นั่ง</h2>
+                <p>คุณกำลังจะจองที่นั่ง **<span id="current-desk-info-step1"></span>** กรุณาโอนเงินตามรายละเอียดด้านล่างนี้:</p>
+
+                <div class="payment-info" style="
+                    border: 2px dashed #4CAF50; 
+                    padding: 15px; 
+                    margin: 20px 0; 
+                    background-color: #e8f5e9; 
+                    border-radius: 8px;
+                    text-align: center;">
+                    
+                    <h3 style="color: #2e7d32; margin-top: 0;">รายละเอียดบัญชีโอนเงิน</h3>
+                    
+                    <p><strong>ชื่อบัญชี:</strong> นางสาว/นาย [ชื่อเจ้าของบัญชี]</p>
+                    <p><strong>ธนาคาร:</strong> [ชื่อธนาคาร]</p>
+                    <p><strong>เลขที่บัญชี:</strong> **4010968796**</p>
+                    <p><strong>เลขพร้อมเพย์:</strong> **[ใส่เลขพร้อมเพย์ของคุณ]**</p>
+                    <p style="font-size: 1.1em; font-weight: bold; color: #c62828;">**จำนวนเงิน:** 3,000 บาท</p>
+                    
+                </div>
+                
+                <p>เมื่อโอนเงินเรียบร้อยแล้ว ให้คลิกปุ่ม **"ไปยังแบบฟอร์มจอง"** เพื่อกรอกข้อมูล</p>
+                <button type="button" id="next-to-form" class="book-button">ไปยังแบบฟอร์มจอง &rarr;</button>
+            </div>
+            
+            <div id="booking-form-area" style="display:none;">
+                <h2>ขั้นตอนที่ 2: ฟอร์มยืนยันการจอง</h2>
+                <p>คุณกำลังจะจอง **<span id="current-desk-info-step2"></span>** กรุณากรอกข้อมูลทั้งหมด</p>
+                
+                <form id="booking-form">
+                    
+                    <label for="name">ชื่อจริง:</label>
+                    <input type="text" id="name" name="entry.1276399642" required> 
+
+                    <label for="nickname">ชื่อเล่น:</label>
+                    <input type="text" id="nickname" name="entry.1189280944" required>
+
+                    <label for="class-room">ชั้นและห้อง:</label>
+                    <input type="text" id="class-room" name="entry.695505628" placeholder="ตัวอย่าง: ม.1/2" required>
+
+                    <hr style="margin: 20px 0; border-top: 1px dashed #ddd;">
+                    
+                    <label for="amount">จำนวนเงินที่โอน (บาท):</label>
+                    <input type="text" id="amount" name="entry.1968564265" required>
+                    
+                    <button type="submit" class="book-button">ยืนยันการจอง</button>
+                    <button type="button" id="back-to-details" class="back-button" style="margin-top: 10px;">&larr; กลับไปดูรายละเอียดการโอนเงิน</button>
+                </form>
+            </div>
+            
+        </div>
+    </div>
+
+    <iframe name="hidden_iframe" id="hidden_iframe" style="display:none;" 
+            onload="if(submitted) { submitted=false; handleSuccessfulSubmission(); }">
+    </iframe>
+
+    <script src="m1-script.js"></script>
+</body>
+</html>
