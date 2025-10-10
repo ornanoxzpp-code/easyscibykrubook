@@ -1,4 +1,6 @@
-document.addEventListener('DOMContentLoaded', () => {
+// ในไฟล์ JavaScript ที่ปรับปรุงแล้ว
+
+Document.addEventListener('DOMContentLoaded', () => {
     
     // *** ✅ CONFIG: URL ของ Apps Script ที่คุณ Deploy มาจาก Google Sheet ม.1 (อันล่าสุด) ✅ ***
     const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwBux71ffOo12kaltqcuycPdpo5qBupLmfTv9dvClot6m80RTETRV_fEZ-aRrvfRMSeJQ/exec'; 
@@ -18,7 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const currentDeskInfoStep2 = document.getElementById('current-desk-info-step2');
     
     let selectedSeat = null; 
-    let submittedName = ''; // ตัวแปรสำหรับเก็บชื่อที่เพิ่งจอง
+    let submittedName = ''; 
     
     
     // ------------------------------------------------------------------
@@ -26,7 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // ------------------------------------------------------------------
     const fetchSeatStatus = async () => {
         try {
-            // ดึงข้อมูลสถานะที่นั่งทั้งหมด (ใช้ JSONP)
+            // ดึงข้อมูลสถานะที่นั่งทั้งหมด (ยังคงใช้ JSONP)
             const response = await fetch(`${APPS_SCRIPT_URL}?callback=handleResponse`);
             const text = await response.text();
 
@@ -41,6 +43,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     seatElement.setAttribute('data-status', seatData['Status']);
                     if (seatData['Status'] === 'Booked') {
                         seatElement.setAttribute('data-name', seatData['Name']);
+                    } else {
+                        seatElement.removeAttribute('data-name'); // ลบชื่อออกถ้าว่าง
                     }
                 }
             });
@@ -51,31 +55,33 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     fetchSeatStatus();
     
-    window.handleResponse = function(data) {}; // Dummy function for JSONP
+    // Dummy function สำหรับ JSONP ใน doGet()
+    window.handleResponse = function(data) {}; 
 
 
     // ------------------------------------------------------------------
     // 2. ฟังก์ชันจัดการหลังส่งฟอร์ม (POST)
     // ------------------------------------------------------------------
     window.handleSuccessfulSubmission = function(response) {
+        console.log("Response Received:", response); // ตรวจสอบว่าถูกเรียกกี่ครั้ง
+        
         if (response.status === 'success') {
             alert(`🎉 การจองสำเร็จแล้ว!`);
             alert(`รบกวนส่งหลักฐานการชำระเงินมาที่ไลน์ส่วนตัวของคุณครู เพื่อยืนยันการจอง`);
             
-            // ✅ โค้ดที่แก้ไข: อัปเดตสถานะใน DOM ทันที (แก้ปัญหาไม่ขึ้นสีแดง)
+            // อัปเดตสถานะใน DOM ทันที
             if (selectedSeat) {
                 selectedSeat.setAttribute('data-status', 'Booked'); 
                 selectedSeat.setAttribute('data-name', submittedName); 
             }
 
             closeModal();
-            // เรียก fetchSeatStatus ซ้ำ เพื่อยืนยันสถานะจากชีตอีกครั้ง
-            fetchSeatStatus(); 
+            fetchSeatStatus(); // ยืนยันสถานะจากชีตอีกครั้ง
             
         } else if (response.status === 'error' && response.message.includes('ที่นั่งถูกจองแล้ว')) {
             alert('❌ ที่นั่งนี้เพิ่งถูกจองโดยผู้อื่น กรุณาเลือกที่นั่งใหม่');
             closeModal();
-            fetchSeatStatus(); // โหลดสถานะใหม่
+            fetchSeatStatus(); 
         } else {
             alert('เกิดข้อผิดพลาดในการบันทึกการจอง กรุณาลองใหม่อีกครั้ง');
             console.error(response.message);
@@ -90,19 +96,20 @@ document.addEventListener('DOMContentLoaded', () => {
         modal.style.display = 'none';
         bookingForm.reset(); 
         selectedSeat = null;
+        // รีเซ็ตการแสดงผลกลับไปหน้าโอนเงินเสมอเมื่อปิด modal
         bookingFormArea.style.display = 'none';
-        transferDetails.style.display = 'block';
-        submittedName = ''; // ล้างชื่อผู้จอง
+        transferDetails.style.display = 'block'; 
+        submittedName = ''; 
     };
 
     seats.forEach(seat => {
         seat.addEventListener('click', (e) => {
             e.stopPropagation(); 
             
-            // ✅ โค้ดที่แก้ไข: ตรวจสอบและบล็อกการจองตั้งแต่การคลิก
+            // ตรวจสอบสถานะ ณ เวลาคลิก
             if (seat.getAttribute('data-status') === 'Booked') {
                 alert(`ที่นั่งนี้ถูกจองแล้วโดย ${seat.getAttribute('data-name') || 'ผู้อื่น'}! กรุณาเลือกที่นั่งอื่น`);
-                return; // หยุดการทำงานของโค้ด ไม่ให้เปิด Modal
+                return; 
             }
             
             try {
@@ -123,8 +130,14 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     nextToFormButton.addEventListener('click', () => {
-        transferDetails.style.display = 'none';
-        bookingFormArea.style.display = 'block';
+        // ตรวจสอบฟอร์มก่อนไปต่อ
+        if (bookingForm.checkValidity()) {
+             transferDetails.style.display = 'none';
+             bookingFormArea.style.display = 'block';
+        } else {
+             // ถ้าฟอร์มไม่สมบูรณ์
+             bookingForm.reportValidity();
+        }
     });
     
     backToDetailsButton.addEventListener('click', () => {
@@ -154,7 +167,7 @@ document.addEventListener('DOMContentLoaded', () => {
         formData.append('deskId', deskId);
         formData.append('seatId', seatId);
         
-        submittedName = document.getElementById('name').value; // ✅ เก็บชื่อที่ส่ง
+        submittedName = document.getElementById('name').value; 
         formData.append('name', submittedName);
 
         try {
@@ -163,12 +176,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 body: formData, 
             });
 
+            // ตรวจสอบว่าการตอบกลับเป็น JSON หรือไม่
             const result = await response.json();
+            
+            // เรียกฟังก์ชันประมวลผลผลลัพธ์
             window.handleSuccessfulSubmission(result); 
 
         } catch (error) {
-            console.error("Error submitting form:", error);
-            alert("เกิดข้อผิดพลาดในการเชื่อมต่อ กรุณาลองใหม่อีกครั้ง");
+            console.error("Error submitting form, response not JSON or server error:", error);
+            alert("เกิดข้อผิดพลาดในการเชื่อมต่อ (อาจเป็นปัญหาที่ Apps Script) กรุณาลองใหม่อีกครั้ง");
             closeModal();
         }
     });
