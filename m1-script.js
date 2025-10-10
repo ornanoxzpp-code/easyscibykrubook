@@ -9,38 +9,35 @@ document.addEventListener('DOMContentLoaded', () => {
     const seats = document.querySelectorAll('.seat'); 
     const modal = document.getElementById('booking-modal');
     const closeButton = document.querySelector('.close-button');
-    
-    const bookingForm = document.getElementById('booking-form'); 
-    const transferDetails = document.getElementById('transfer-details'); 
+    const bookingForm = document.getElementById('booking-form');
+    const transferDetails = document.getElementById('transfer-details');
     const bookingFormArea = document.getElementById('booking-form-area');
-    
-    // ID ปุ่มใหม่ตาม HTML
-    const confirmBookingButton = document.getElementById('confirm-booking'); 
-    const backToFormButton = document.getElementById('back-to-form'); 
-    
+    const nextToFormButton = document.getElementById('next-to-form');
+    const backToDetailsButton = document.getElementById('back-to-details');
     const currentDeskInfoStep1 = document.getElementById('current-desk-info-step1');
     const currentDeskInfoStep2 = document.getElementById('current-desk-info-step2');
     
     let selectedSeat = null; 
-    let submittedName = ''; 
     
     
     // ------------------------------------------------------------------
-    // 1. ฟังก์ชันดึงสถานะจาก Google Sheet (แก้ปัญหาสีหายเมื่อรีเฟรช)
+    // 1. ฟังก์ชันดึงสถานะจาก Google Sheet (Real-time update)
     // ------------------------------------------------------------------
     const fetchSeatStatus = async () => {
         try {
+            // ดึงข้อมูลสถานะที่นั่งทั้งหมด (ใช้ JSONP)
             const response = await fetch(`${APPS_SCRIPT_URL}?callback=handleResponse`);
             const text = await response.text();
 
+            // แยกข้อมูล JSON ออกมา (ตัด callback function name ออก)
             const jsonString = text.substring(text.indexOf('(') + 1, text.lastIndexOf(')'));
             const data = JSON.parse(jsonString);
 
-            // โค้ดนี้จะอัปเดต data-status ตาม Sheet ตลอดเวลาที่โหลดหน้า
+            // อัปเดตสถานะของที่นั่งบนหน้าเว็บ
             data.forEach(seatData => {
                 const seatElement = document.querySelector(`.seat[data-seat-id="${seatData['Seat ID']}"]`);
                 if (seatElement) {
-                    seatElement.setAttribute('data-status', seatData['Status']); 
+                    seatElement.setAttribute('data-status', seatData['Status']);
                     if (seatData['Status'] === 'Booked') {
                         seatElement.setAttribute('data-name', seatData['Name']);
                     }
@@ -49,11 +46,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
         } catch (error) {
             console.error('เกิดข้อผิดพลาดในการดึงสถานะ:', error);
+            // Alert นี้อาจจะเกิดขึ้นถ้า URL ผิด หรือไฟล์ .js ยังไม่อัปเดต
+            // alert("เกิดข้อผิดพลาดในการเชื่อมต่อ กรุณาตรวจสอบ Apps Script URL"); 
         }
     };
     fetchSeatStatus();
     
-    window.handleResponse = function(data) {}; 
+    window.handleResponse = function(data) {}; // Dummy function for JSONP
 
 
     // ------------------------------------------------------------------
@@ -61,26 +60,19 @@ document.addEventListener('DOMContentLoaded', () => {
     // ------------------------------------------------------------------
     window.handleSuccessfulSubmission = function(response) {
         if (response.status === 'success') {
+            alert(`🎉 การจองสำเร็จแล้ว`);
+            alert(`รบกวนส่งหลักฐานการชำระเงินมาที่ไลน์ส่วนตัวของคุณครู เพื่อยืนยันการจอง`);
             
-            // แสดง Pop-up ตามที่ต้องการ
-            alert(`🎉 จองสำเร็จ`);
-            alert(`รบกวนส่งหลักฐานการโอนเงินที่ไลน์ส่วนตัวของคุณครูเพื่อยืนยันการจอง`);
-            alert(`บุ๊คขอบคุณค่ะ`);
-            
-            // อัปเดตสถานะใน DOM ทันที (เพื่อให้สีแดงขึ้นทันที)
-            if (selectedSeat) {
-                selectedSeat.setAttribute('data-status', 'Booked'); 
-                selectedSeat.setAttribute('data-name', submittedName); 
-            }
+            // อัปเดตสถานะบนหน้าจอทันที
+            selectedSeat.setAttribute('data-status', 'Booked');
+            selectedSeat.setAttribute('data-name', response.name); 
 
             closeModal();
-            fetchSeatStatus(); // ยืนยันสถานะจากชีตอีกครั้ง
             
         } else if (response.status === 'error' && response.message.includes('ที่นั่งถูกจองแล้ว')) {
-            // กรณีมีคนจองไปแล้วระหว่างที่ Modal เปิดอยู่ 
-            alert(' การจองสำเร็จแล้ว ');
+            alert('❌ ที่นั่งนี้เพิ่งถูกจองโดยผู้อื่น กรุณาเลือกที่นั่งใหม่');
             closeModal();
-            fetchSeatStatus(); 
+            fetchSeatStatus(); // โหลดสถานะใหม่
         } else {
             alert('เกิดข้อผิดพลาดในการบันทึกการจอง กรุณาลองใหม่อีกครั้ง');
             console.error(response.message);
@@ -89,24 +81,24 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // ------------------------------------------------------------------
-    // 3. Logic การจองและ Modal
+    // 3. Logic การจอง
     // ------------------------------------------------------------------
     const closeModal = () => {
         modal.style.display = 'none';
         bookingForm.reset(); 
         selectedSeat = null;
-        submittedName = ''; 
-        
-        // รีเซ็ต Modal ให้กลับไปที่หน้ากรอกข้อมูล
-        transferDetails.style.display = 'none';
-        bookingFormArea.style.display = 'block'; 
+        bookingFormArea.style.display = 'none';
+        transferDetails.style.display = 'block';
     };
 
     seats.forEach(seat => {
         seat.addEventListener('click', (e) => {
             e.stopPropagation(); 
             
-            // ไม่ต้องมี if/return เพราะ CSS (pointer-events: none) บล็อกการคลิกที่ Booked แล้ว
+            if (seat.getAttribute('data-status') === 'Booked') {
+                alert(`ที่นั่งนี้ถูกจองแล้วโดย ${seat.getAttribute('data-name') || 'ผู้อื่น'}! กรุณาเลือกที่นั่งอื่น`);
+                return; 
+            }
             
             try {
                 selectedSeat = seat;
@@ -117,9 +109,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 currentDeskInfoStep1.textContent = deskInfo;
                 currentDeskInfoStep2.textContent = deskInfo;
                 
-                // เปิด Modal และแสดงหน้ากรอกข้อมูลก่อน
-                transferDetails.style.display = 'none';
-                bookingFormArea.style.display = 'block';
                 modal.style.display = 'block';
 
             } catch (error) {
@@ -128,54 +117,42 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    nextToFormButton.addEventListener('click', () => {
+        transferDetails.style.display = 'none';
+        bookingFormArea.style.display = 'block';
+    });
+    
+    backToDetailsButton.addEventListener('click', () => {
+        bookingFormArea.style.display = 'none';
+        transferDetails.style.display = 'block';
+    });
+
     closeButton.addEventListener('click', closeModal);
     window.addEventListener('click', (event) => {
         if (event.target === modal) {
             closeModal();
         }
     });
-    
+
     // ------------------------------------------------------------------
-    // 4. การจัดการปุ่ม: กรอกข้อมูลเสร็จ -> ดูรายละเอียดโอนเงิน
+    // 4. การส่งฟอร์ม (Fetch API)
     // ------------------------------------------------------------------
-    bookingForm.addEventListener('submit', (e) => {
+    bookingForm.addEventListener('submit', async (e) => {
         e.preventDefault(); 
-        
-        // เก็บชื่อที่กรอกไว้
-        submittedName = document.getElementById('name').value;
-        
-        // ไปหน้าโอนเงิน
-        bookingFormArea.style.display = 'none';
-        transferDetails.style.display = 'block';
-    });
 
-    // 5. ปุ่มย้อนกลับ
-    backToFormButton.addEventListener('click', () => {
-        transferDetails.style.display = 'none';
-        bookingFormArea.style.display = 'block'; 
-    });
-
-
-    // ------------------------------------------------------------------
-    // 6. การส่งฟอร์มจริง: ยืนยันการโอนเงิน -> POST ข้อมูล
-    // ------------------------------------------------------------------
-    confirmBookingButton.addEventListener('click', async () => {
         if (!selectedSeat) return;
-        
-        // ดึงค่าจากฟอร์มที่กรอกไว้ก่อนหน้า
-        const classRoomValue = document.getElementById('classRoom').value; 
 
         const seatId = selectedSeat.getAttribute('data-seat-id');
         const deskId = selectedSeat.closest('.desk').getAttribute('data-desk-id');
         
-        const formData = new FormData();
+        const formData = new FormData(bookingForm);
         formData.append('deskId', deskId);
         formData.append('seatId', seatId);
+        
+        const submittedName = document.getElementById('name').value;
         formData.append('name', submittedName);
-        formData.append('classRoom', classRoomValue);
 
         try {
-            // การจองจะถูกทริกเกอร์เมื่อกดปุ่มยืนยันการโอนเงินนี้
             const response = await fetch(APPS_SCRIPT_URL, {
                 method: 'POST',
                 body: formData, 
