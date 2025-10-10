@@ -234,3 +234,15 @@ header {
     from { transform: translateY(-100px); opacity: 0; }
     to { transform: translateY(0); opacity: 1; }
 }
+
+/* การตั้งค่า CSS สำหรับที่นั่งที่ถูกจอง */
+.seat[data-status="Booked"] {
+    background-color: #f44336 !important; /* สีแดงสำหรับที่นั่งที่จองแล้ว */
+    cursor: not-allowed; /* เปลี่ยนเคอร์เซอร์เป็นไม่อนุญาต */
+    pointer-events: none; /* บล็อกการคลิกบนที่นั่งที่ถูกจองแล้ว */
+}
+
+/* คุณอาจต้องเพิ่มสีเทาเมื่อสถานะเป็น Available */
+.seat[data-status="Available"] {
+    background-color: #cccccc; /* หรือสีเทาที่คุณต้องการ */
+}
