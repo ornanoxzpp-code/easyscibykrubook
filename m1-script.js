@@ -73,7 +73,7 @@ Document.addEventListener('DOMContentLoaded', () => {
             fetchSeatStatus(); 
             
         } else if (response.status === 'error' && response.message.includes('ที่นั่งถูกจองแล้ว')) {
-            alert('❌ ที่นั่งนี้เพิ่งถูกจองโดยผู้อื่น กรุณาเลือกที่นั่งใหม่');
+            alert(' Seat was booked ');
             closeModal();
             fetchSeatStatus(); // โหลดสถานะใหม่
         } else {
