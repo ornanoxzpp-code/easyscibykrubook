@@ -40,11 +40,7 @@ Document.addEventListener('DOMContentLoaded', () => {
                 if (seatElement) {
                     seatElement.setAttribute('data-status', seatData['Status']);
                     if (seatData['Status'] === 'Booked') {
-                        // บันทึกชื่อผู้จองจาก Google Sheet
                         seatElement.setAttribute('data-name', seatData['Name']);
-                    } else {
-                         // ล้างชื่อผู้จองถ้าสถานะไม่ใช่ Booked
-                        seatElement.removeAttribute('data-name'); 
                     }
                 }
             });
@@ -69,7 +65,7 @@ Document.addEventListener('DOMContentLoaded', () => {
             // ✅ โค้ดที่แก้ไข: อัปเดตสถานะใน DOM ทันที (แก้ปัญหาไม่ขึ้นสีแดง)
             if (selectedSeat) {
                 selectedSeat.setAttribute('data-status', 'Booked'); 
-                selectedSeat.setAttribute('data-name', submittedName); // บันทึกชื่อที่เพิ่งจอง
+                selectedSeat.setAttribute('data-name', submittedName); 
             }
 
             closeModal();
@@ -77,8 +73,7 @@ Document.addEventListener('DOMContentLoaded', () => {
             fetchSeatStatus(); 
             
         } else if (response.status === 'error' && response.message.includes('ที่นั่งถูกจองแล้ว')) {
-            // แจ้งเตือนเมื่อมีการจองซ้ำซ้อนโดยคนอื่น
-            alert('❌ ที่นั่งนี้เพิ่งถูกจองโดยผู้อื่น กรุณาเลือกที่นั่งใหม่');
+            alert(' Seat was booked ');
             closeModal();
             fetchSeatStatus(); // โหลดสถานะใหม่
         } else {
@@ -95,9 +90,8 @@ Document.addEventListener('DOMContentLoaded', () => {
         modal.style.display = 'none';
         bookingForm.reset(); 
         selectedSeat = null;
-        // รีเซ็ตหน้าต่าง Modal ให้กลับไปหน้า 'transferDetails' เสมอ
         bookingFormArea.style.display = 'none';
-        transferDetails.style.display = 'block'; 
+        transferDetails.style.display = 'block';
         submittedName = ''; // ล้างชื่อผู้จอง
     };
 
@@ -105,35 +99,16 @@ Document.addEventListener('DOMContentLoaded', () => {
         seat.addEventListener('click', (e) => {
             e.stopPropagation(); 
             
-            // ตรวจสอบและบล็อกการจองตั้งแต่การคลิก
+            // ✅ โค้ดที่แก้ไข: ตรวจสอบและบล็อกการจองตั้งแต่การคลิก
             if (seat.getAttribute('data-status') === 'Booked') {
-                
-                // *** ✅ โค้ดที่แก้ไข: แสดงชื่อผู้จอง ✅ ***
-                const name = seat.getAttribute('data-name');
-                const seatId = seat.getAttribute('data-seat-id');
-
-                let alertMessage = `❌ ที่นั่ง ${seatId} ถูกจองแล้ว`;
-
-                if (name) {
-                    alertMessage += `\n\nผู้จอง: ${name}`;
-                } else {
-                    alertMessage += `โดยผู้อื่น`;
-                }
-                
-                alertMessage += `\n\nกรุณาเลือกที่นั่งอื่น`;
-                
-                alert(alertMessage);
-                // **********************************
-                
+                alert(`ที่นั่งนี้ถูกจองแล้วโดย ${seat.getAttribute('data-name') || 'ผู้อื่น'}! กรุณาเลือกที่นั่งอื่น`);
                 return; // หยุดการทำงานของโค้ด ไม่ให้เปิด Modal
             }
             
             try {
                 selectedSeat = seat;
                 const seatId = selectedSeat.getAttribute('data-seat-id'); 
-                // โค้ดส่วนนี้อาจต้องดูโครงสร้าง HTML ถ้าไม่มี class .desk
-                const deskElement = selectedSeat.closest('.desk'); 
-                const deskId = deskElement ? deskElement.getAttribute('data-desk-id') : 'N/A'; 
+                const deskId = selectedSeat.closest('.desk').getAttribute('data-desk-id'); 
 
                 const deskInfo = `โต๊ะที่ ${deskId} ตำแหน่ง ${seatId}`;
                 currentDeskInfoStep1.textContent = deskInfo;
@@ -148,13 +123,6 @@ Document.addEventListener('DOMContentLoaded', () => {
     });
 
     nextToFormButton.addEventListener('click', () => {
-        // ตรวจสอบความถูกต้องของข้อมูลในฟอร์มก่อนไปหน้าต่อไป
-        if (!bookingForm.checkValidity()) {
-            // ถ้าข้อมูลไม่ครบหรือผิดพลาด ให้แจ้งเตือน
-            bookingForm.reportValidity();
-            return;
-        }
-        
         transferDetails.style.display = 'none';
         bookingFormArea.style.display = 'block';
     });
@@ -180,8 +148,7 @@ Document.addEventListener('DOMContentLoaded', () => {
         if (!selectedSeat) return;
 
         const seatId = selectedSeat.getAttribute('data-seat-id');
-        const deskElement = selectedSeat.closest('.desk'); 
-        const deskId = deskElement ? deskElement.getAttribute('data-desk-id') : 'N/A';
+        const deskId = selectedSeat.closest('.desk').getAttribute('data-desk-id');
         
         const formData = new FormData(bookingForm);
         formData.append('deskId', deskId);
@@ -206,3 +173,6 @@ Document.addEventListener('DOMContentLoaded', () => {
         }
     });
 });
+
+
+เติมในนี้ให้เลยหน่อย
