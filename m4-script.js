@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     
     // *** ✅ CONFIG: URL ของ Apps Script ที่คุณ Deploy มาจาก Google Sheet ม.1 (อันล่าสุด) ✅ ***
-    const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzxxdb10yR1yBhd7fxUs3e4KN2k4IIMMtRYVW0uT_AO118FVCH34ZKSxff7iTxYk7DI2Q/exec'; 
+    const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzVlYww38Wcg7-FA83US5YorSX0gvtZpnSdZd9pF6ARvzVq3OT182HN0sGz8YUoLNX3/exec'; 
     
     // ------------------------------------------------------------------
     // เลือกองค์ประกอบที่ใช้ในการทำงาน
