@@ -1,20 +1,11 @@
 document.addEventListener('DOMContentLoaded', () => {
     
-    // *** CONFIG: Google Form URL และ Field ID สำหรับ ม.3 ***
+    // *** ✅ CONFIG: URL ของ Apps Script ที่คุณ Deploy มาจาก Google Sheet ม.1 (อันล่าสุด) ✅ ***
+    const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzzH1Nv5vooTmiC9kujlEibIYnhZmrqL18sNlSkf6REMvj-x4B-q5Igm4bxNTbUOYFsRg/exec'; 
     
-    // URL สำหรับส่งข้อมูล Google Form (ม.3)
-    const GOOGLE_FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLScvv8WVzSGSqbDDrnIbeD4ywLAgYbayDr9MMgex-mhMTRBwNQ/formResponse'; 
-    
-    const FIELD_ID = {
-        name: 'entry.1332577056',    
-        nickname: 'entry.263306731',     
-        classRoom: 'entry.172025079',
-        amount: 'entry.1412669194', // จำนวนเงิน
-        deskId: 'entry.366494665',    
-        seatId: 'entry.1409016264',     
-    };
-    // ********************************************
-    
+    // ------------------------------------------------------------------
+    // เลือกองค์ประกอบที่ใช้ในการทำงาน
+    // ------------------------------------------------------------------
     const seats = document.querySelectorAll('.seat'); 
     const modal = document.getElementById('booking-modal');
     const closeButton = document.querySelector('.close-button');
@@ -27,19 +18,71 @@ document.addEventListener('DOMContentLoaded', () => {
     const currentDeskInfoStep2 = document.getElementById('current-desk-info-step2');
     
     let selectedSeat = null; 
-    window.submitted = false; 
+    
+    
+    // ------------------------------------------------------------------
+    // 1. ฟังก์ชันดึงสถานะจาก Google Sheet (Real-time update)
+    // ------------------------------------------------------------------
+    const fetchSeatStatus = async () => {
+        try {
+            // ดึงข้อมูลสถานะที่นั่งทั้งหมด (ใช้ JSONP)
+            const response = await fetch(`${APPS_SCRIPT_URL}?callback=handleResponse`);
+            const text = await response.text();
 
-    // ฟังก์ชันจัดการเมื่อการส่งข้อมูลสำเร็จ (อัปเดตข้อความแจ้งเตือน)
-    window.handleSuccessfulSubmission = function() {
-        if (selectedSeat) {
+            // แยกข้อมูล JSON ออกมา (ตัด callback function name ออก)
+            const jsonString = text.substring(text.indexOf('(') + 1, text.lastIndexOf(')'));
+            const data = JSON.parse(jsonString);
+
+            // อัปเดตสถานะของที่นั่งบนหน้าเว็บ
+            data.forEach(seatData => {
+                const seatElement = document.querySelector(`.seat[data-seat-id="${seatData['Seat ID']}"]`);
+                if (seatElement) {
+                    seatElement.setAttribute('data-status', seatData['Status']);
+                    if (seatData['Status'] === 'Booked') {
+                        seatElement.setAttribute('data-name', seatData['Name']);
+                    }
+                }
+            });
+
+        } catch (error) {
+            console.error('เกิดข้อผิดพลาดในการดึงสถานะ:', error);
+            // Alert นี้อาจจะเกิดขึ้นถ้า URL ผิด หรือไฟล์ .js ยังไม่อัปเดต
+            // alert("เกิดข้อผิดพลาดในการเชื่อมต่อ กรุณาตรวจสอบ Apps Script URL"); 
+        }
+    };
+    fetchSeatStatus();
+    
+    window.handleResponse = function(data) {}; // Dummy function for JSONP
+
+
+    // ------------------------------------------------------------------
+    // 2. ฟังก์ชันจัดการหลังส่งฟอร์ม (POST)
+    // ------------------------------------------------------------------
+    window.handleSuccessfulSubmission = function(response) {
+        if (response.status === 'success') {
             alert(`🎉 การจองสำเร็จแล้ว`);
             alert(`รบกวนส่งหลักฐานการชำระเงินมาที่ไลน์ส่วนตัวของคุณครู เพื่อยืนยันการจอง`);
-            alert(`บุ๊คขอบคุณค่ะ`);
+            
+            // อัปเดตสถานะบนหน้าจอทันที
+            selectedSeat.setAttribute('data-status', 'Booked');
+            selectedSeat.setAttribute('data-name', response.name); 
+
             closeModal();
-            console.warn('⚠️ การจองสำเร็จแล้ว อย่าลืมแก้ไขไฟล์ HTML เพื่อบล็อกที่นั่งนี้');
+            
+        } else if (response.status === 'error' && response.message.includes('ที่นั่งถูกจองแล้ว')) {
+            alert('Seat was booked');
+            closeModal();
+            fetchSeatStatus(); // โหลดสถานะใหม่
+        } else {
+            alert('เกิดข้อผิดพลาดในการบันทึกการจอง กรุณาลองใหม่อีกครั้ง');
+            console.error(response.message);
+            closeModal();
         }
     };
 
+    // ------------------------------------------------------------------
+    // 3. Logic การจอง
+    // ------------------------------------------------------------------
     const closeModal = () => {
         modal.style.display = 'none';
         bookingForm.reset(); 
@@ -52,8 +95,8 @@ document.addEventListener('DOMContentLoaded', () => {
         seat.addEventListener('click', (e) => {
             e.stopPropagation(); 
             
-            if (seat.getAttribute('data-status') === 'booked') {
-                alert('ที่นั่งนี้ถูกจองแล้ว! กรุณาเลือกที่นั่งอื่น');
+            if (seat.getAttribute('data-status') === 'Booked') {
+                alert(`ที่นั่งนี้ถูกจองแล้วโดย ${seat.getAttribute('data-name') || 'ผู้อื่น'}! กรุณาเลือกที่นั่งอื่น`);
                 return; 
             }
             
@@ -70,11 +113,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
             } catch (error) {
                 console.error("เกิดข้อผิดพลาดในการเปิดฟอร์ม:", error);
-                alert("ไม่สามารถเปิดฟอร์มจองได้");
             }
         });
     });
-    
+
     nextToFormButton.addEventListener('click', () => {
         transferDetails.style.display = 'none';
         bookingFormArea.style.display = 'block';
@@ -92,36 +134,37 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    bookingForm.addEventListener('submit', (e) => {
+    // ------------------------------------------------------------------
+    // 4. การส่งฟอร์ม (Fetch API)
+    // ------------------------------------------------------------------
+    bookingForm.addEventListener('submit', async (e) => {
         e.preventDefault(); 
 
-        if (selectedSeat) {
-            const seatId = selectedSeat.getAttribute('data-seat-id');
-            const deskId = selectedSeat.closest('.desk').getAttribute('data-desk-id');
-            
-            document.querySelectorAll('#booking-form input[type="hidden"]').forEach(el => el.remove());
+        if (!selectedSeat) return;
 
-            const hiddenDeskId = document.createElement('input');
-            hiddenDeskId.type = 'hidden';
-            hiddenDeskId.name = FIELD_ID.deskId;
-            hiddenDeskId.value = deskId;
-            bookingForm.appendChild(hiddenDeskId);
-            
-            const hiddenSeatId = document.createElement('input');
-            hiddenSeatId.type = 'hidden';
-            hiddenSeatId.name = FIELD_ID.seatId;
-            hiddenSeatId.value = seatId;
-            bookingForm.appendChild(hiddenSeatId);
+        const seatId = selectedSeat.getAttribute('data-seat-id');
+        const deskId = selectedSeat.closest('.desk').getAttribute('data-desk-id');
+        
+        const formData = new FormData(bookingForm);
+        formData.append('deskId', deskId);
+        formData.append('seatId', seatId);
+        
+        const submittedName = document.getElementById('name').value;
+        formData.append('name', submittedName);
 
-            bookingForm.action = GOOGLE_FORM_URL;
-            bookingForm.method = 'POST';
-            bookingForm.target = 'hidden_iframe';
-            
-            window.submitted = true;
-            
-            setTimeout(() => {
-                bookingForm.submit(); 
-            }, 50);
+        try {
+            const response = await fetch(APPS_SCRIPT_URL, {
+                method: 'POST',
+                body: formData, 
+            });
+
+            const result = await response.json();
+            window.handleSuccessfulSubmission(result); 
+
+        } catch (error) {
+            console.error("Error submitting form:", error);
+            alert("เกิดข้อผิดพลาดในการเชื่อมต่อ กรุณาลองใหม่อีกครั้ง");
+            closeModal();
         }
     });
 });
