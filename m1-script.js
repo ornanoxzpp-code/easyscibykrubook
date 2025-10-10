@@ -18,6 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const currentDeskInfoStep2 = document.getElementById('current-desk-info-step2');
     
     let selectedSeat = null; 
+    let submittedName = ''; // ตัวแปรสำหรับเก็บชื่อที่เพิ่งจอง
     
     
     // ------------------------------------------------------------------
@@ -46,8 +47,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         } catch (error) {
             console.error('เกิดข้อผิดพลาดในการดึงสถานะ:', error);
-            // Alert นี้อาจจะเกิดขึ้นถ้า URL ผิด หรือไฟล์ .js ยังไม่อัปเดต
-            // alert("เกิดข้อผิดพลาดในการเชื่อมต่อ กรุณาตรวจสอบ Apps Script URL"); 
         }
     };
     fetchSeatStatus();
@@ -60,14 +59,20 @@ document.addEventListener('DOMContentLoaded', () => {
     // ------------------------------------------------------------------
     window.handleSuccessfulSubmission = function(response) {
         if (response.status === 'success') {
-            alert(`🎉 การจองสำเร็จแล้ว`);
+            alert(`🎉 การจองสำเร็จแล้ว!`);
             alert(`รบกวนส่งหลักฐานการชำระเงินมาที่ไลน์ส่วนตัวของคุณครู เพื่อยืนยันการจอง`);
             
-            // อัปเดตสถานะบนหน้าจอทันที
-            selectedSeat.setAttribute('data-status', 'Booked');
-            selectedSeat.setAttribute('data-name', response.name); 
+            // ✅ โค้ดที่แก้ไข: อัปเดตสถานะใน DOM ทันที
+            if (selectedSeat) {
+                // เปลี่ยน data-status เป็น 'Booked' เพื่อให้ CSS เปลี่ยนสี
+                selectedSeat.setAttribute('data-status', 'Booked'); 
+                // เพิ่มชื่อผู้จองที่ถูกเก็บไว้
+                selectedSeat.setAttribute('data-name', submittedName); 
+            }
 
             closeModal();
+            // เรียก fetchSeatStatus ซ้ำ เพื่อยืนยันสถานะจากชีตอีกครั้ง
+            fetchSeatStatus(); 
             
         } else if (response.status === 'error' && response.message.includes('ที่นั่งถูกจองแล้ว')) {
             alert('❌ ที่นั่งนี้เพิ่งถูกจองโดยผู้อื่น กรุณาเลือกที่นั่งใหม่');
@@ -89,6 +94,7 @@ document.addEventListener('DOMContentLoaded', () => {
         selectedSeat = null;
         bookingFormArea.style.display = 'none';
         transferDetails.style.display = 'block';
+        submittedName = ''; // ล้างชื่อผู้จอง
     };
 
     seats.forEach(seat => {
@@ -149,7 +155,7 @@ document.addEventListener('DOMContentLoaded', () => {
         formData.append('deskId', deskId);
         formData.append('seatId', seatId);
         
-        const submittedName = document.getElementById('name').value;
+        submittedName = document.getElementById('name').value; // ✅ เก็บชื่อที่ส่ง
         formData.append('name', submittedName);
 
         try {
