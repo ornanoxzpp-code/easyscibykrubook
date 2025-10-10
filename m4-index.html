@@ -12,7 +12,7 @@
         <h1>📚 ระบบจองที่นั่ง ม.3 ติวสอบเข้า ม.4 (รอบ อังคาร 17:00-18:00 | 3,500 บาท) ✏️</h1>
     </header>
 
-    <main class="study-room-layout">
+   <main class="study-room-layout">
         
         <div class="chalkboard">
             <h2>กระดาน</h2>
@@ -20,6 +20,7 @@
         </div>
 
         <div id="desk-container">
+            
             <div class="desk-column" id="column-left">
                 
                 <div class="desk" data-desk-id="1">
@@ -122,49 +123,65 @@
 
         </div>
     </main>
-    
+
     <div id="booking-modal" class="modal">
         <div class="modal-content">
             <span class="close-button">&times;</span>
             
-            <h3 id="current-desk-info-step1"></h3>
-            
-            <div id="booking-form-area" style="display: block;">
-                <h4>1. กรอกข้อมูลผู้จอง</h4>
-                
-                <form id="booking-form"> 
-                    <label for="name">ชื่อ-นามสกุล:</label>
-                    <input type="text" id="name" name="name" required>
-                    
-                    <label for="classRoom">ชั้น/ห้อง (ปัจจุบัน):</label>
-                    <input type="text" id="classRoom" name="classRoom" placeholder="ตัวอย่าง: ม.3/1" required>
-                    
-                    <button type="submit" id="next-to-transfer">ดำเนินการต่อ</button>
-                </form>
-            </div>
+            <div id="transfer-details">
+                <h2>ขั้นตอนที่ 1: ชำระเงินค่าจองที่นั่ง</h2>
+                <p>คุณกำลังจะจองที่นั่ง **<span id="current-desk-info-step1"></span>** กรุณาโอนเงินตามรายละเอียดด้านล่างนี้:</p>
 
-            <div id="transfer-details" style="display: none;">
-                <h4>2. รายละเอียดการโอนเงิน (จำนวนเงิน 3,500 บาท)</h4>
-                
-                <p id="current-desk-info-step2" style="font-weight: bold;"></p>
-
-                <div class="transfer-info">
-                    <p>ชื่อบัญชี: นางสาวจุฑาทิพย์ นามสีฐาน</p>
-                    <p>ธนาคาร: กรุงไทย</p>
-                    <p>เลขที่บัญชี: 4010968796</p>
-                    <p>พร้อมเพย์: 0842629363</p>
+                <div class="payment-info" style="
+                    border: 2px dashed #4CAF50; 
+                    padding: 15px; 
+                    margin: 20px 0; 
+                    background-color: #e8f5e9; 
+                    border-radius: 8px;
+                    text-align: center;">
+                    
+                    <h3 style="color: #2e7d32; margin-top: 0;">รายละเอียดบัญชีโอนเงิน</h3>
+                    
+                    <p><strong>ชื่อบัญชี:</strong> นางสาวจุฑาทิพย์ นามสีฐาน</p>
+                    <p><strong>ธนาคาร:</strong> กรุงไทย</p>
+                    <p><strong>เลขที่บัญชี:</strong> **4010968796**</p>
+                    <p><strong>เลขพร้อมเพย์:</strong> **0842629363**</p>
+                    <p style="font-size: 1.1em; font-weight: bold; color: #c62828;">**จำนวนเงิน:** 3,000 บาท</p>
+                    
                 </div>
                 
-                <p style="color: red; font-weight: bold;">*สำคัญ: ที่นั่งจะถูกจองเมื่อท่านกดยืนยันด้านล่าง</p>
+                <p>เมื่อโอนเงินเรียบร้อยแล้ว ให้คลิกปุ่ม **"ไปยังแบบฟอร์มจอง"** เพื่อกรอกข้อมูล</p>
+                <button type="button" id="next-to-form" class="book-button">ไปยังแบบฟอร์มจอง &rarr;</button>
+            </div>
+            
+            <div id="booking-form-area" style="display:none;">
+                <h2>ขั้นตอนที่ 2: ฟอร์มยืนยันการจอง</h2>
+                <p>คุณกำลังจะจอง **<span id="current-desk-info-step2"></span>** กรุณากรอกข้อมูลทั้งหมด</p>
                 
-                <button id="confirm-booking" class="confirm-button">ยืนยันการโอนเงินและจอง</button>
-                
-                <button id="back-to-form" class="back-button">ย้อนกลับ</button>
+                <form id="booking-form">
+                    
+                    <label for="name">ชื่อจริง:</label>
+                    <input type="text" id="name" name="name" required> 
+
+                    <label for="nickname">ชื่อเล่น:</label>
+                    <input type="text" id="nickname" name="nickname" required>
+
+                    <label for="class-room">ชั้นและห้อง:</label>
+                    <input type="text" id="class-room" name="classRoom" placeholder="ตัวอย่าง: ม.1/2" required>
+
+                    <hr style="margin: 20px 0; border-top: 1px dashed #ddd;">
+                    
+                    <label for="amount">จำนวนเงินที่โอน (บาท):</label>
+                    <input type="text" id="amount" name="amount" required>
+                    
+                    <button type="submit" class="book-button">ยืนยันการจอง</button>
+                    <button type="button" id="back-to-details" class="back-button" style="margin-top: 10px;">&larr; กลับไปดูรายละเอียดการโอนเงิน</button>
+                </form>
             </div>
             
         </div>
     </div>
 
-    <script src="m3-script.js"></script>
+    <script src="m1-script.js"></script>
 </body>
 </html>
