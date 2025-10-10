@@ -62,11 +62,9 @@ document.addEventListener('DOMContentLoaded', () => {
             alert(`🎉 การจองสำเร็จแล้ว!`);
             alert(`รบกวนส่งหลักฐานการชำระเงินมาที่ไลน์ส่วนตัวของคุณครู เพื่อยืนยันการจอง`);
             
-            // ✅ โค้ดที่แก้ไข: อัปเดตสถานะใน DOM ทันที
+            // ✅ โค้ดที่แก้ไข: อัปเดตสถานะใน DOM ทันที (แก้ปัญหาไม่ขึ้นสีแดง)
             if (selectedSeat) {
-                // เปลี่ยน data-status เป็น 'Booked' เพื่อให้ CSS เปลี่ยนสี
                 selectedSeat.setAttribute('data-status', 'Booked'); 
-                // เพิ่มชื่อผู้จองที่ถูกเก็บไว้
                 selectedSeat.setAttribute('data-name', submittedName); 
             }
 
@@ -101,9 +99,10 @@ document.addEventListener('DOMContentLoaded', () => {
         seat.addEventListener('click', (e) => {
             e.stopPropagation(); 
             
+            // ✅ โค้ดที่แก้ไข: ตรวจสอบและบล็อกการจองตั้งแต่การคลิก
             if (seat.getAttribute('data-status') === 'Booked') {
                 alert(`ที่นั่งนี้ถูกจองแล้วโดย ${seat.getAttribute('data-name') || 'ผู้อื่น'}! กรุณาเลือกที่นั่งอื่น`);
-                return; 
+                return; // หยุดการทำงานของโค้ด ไม่ให้เปิด Modal
             }
             
             try {
