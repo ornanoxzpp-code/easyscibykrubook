@@ -76,46 +76,66 @@ document.addEventListener('DOMContentLoaded', () => {
             closeModal();
             fetchSeatStatus(); // ยืนยันสถานะจากชีตอีกครั้ง
             
-        } else if (response.status === 'error' && response.message.includes('ที่นั่งถูกจองแล้ว')) {
-            // กรณีมีคนจองไปแล้วระหว่างที่ Modal เปิดอยู่ 
-            alert('Seat was booked ');
-            closeModal();
-            fetchSeatStatus(); 
-        } else {
-            alert('เกิดข้อผิดพลาดในการบันทึกการจอง กรุณาลองใหม่อีกครั้ง');
-            console.error(response.message);
-            closeModal();
-        }
-    };
+    // ------------------------------------------------------------------
+// 3. Logic การจอง (ปรับปรุง)
+// ------------------------------------------------------------------
+const closeModal = () => {
+    // ... (โค้ดเดิม) ...
+    modal.style.display = 'none';
+    bookingForm.reset(); 
+    selectedSeat = null;
+    // รีเซ็ตหน้าต่าง Modal ให้กลับไปหน้า 'transferDetails' เสมอ
+    bookingFormArea.style.display = 'none';
+    transferDetails.style.display = 'block'; 
+    submittedName = ''; // ล้างชื่อผู้จอง
+};
 
-    // ------------------------------------------------------------------
-    // 3. Logic การจองและ Modal
-    // ------------------------------------------------------------------
-    const closeModal = () => {
-        modal.style.display = 'none';
-        bookingForm.reset(); 
-        selectedSeat = null;
-        submittedName = ''; 
+seats.forEach(seat => {
+    seat.addEventListener('click', (e) => {
+        e.stopPropagation(); 
         
-        // รีเซ็ต Modal ให้กลับไปที่หน้ากรอกข้อมูล
-        transferDetails.style.display = 'none';
-        bookingFormArea.style.display = 'block'; 
-    };
+        // 1. ตรวจสอบสถานะ ณ เวลาคลิก
+        if (seat.getAttribute('data-status') === 'Booked') {
+            
+            // *** สถานะ Booked: แจ้งเตือนและหยุดการทำงาน ***
+            const name = seat.getAttribute('data-name');
+            const seatId = seat.getAttribute('data-seat-id');
 
-    seats.forEach(seat => {
-        seat.addEventListener('click', (e) => {
-            e.stopPropagation(); 
+            let alertMessage = `❌ ที่นั่ง ${seatId} ถูกจองแล้ว`;
+            if (name) {
+                alertMessage += `\n\nผู้จอง: ${name}`;
+            } else {
+                alertMessage += `โดยผู้อื่น`;
+            }
+            alertMessage += `\n\nกรุณาเลือกที่นั่งอื่น`;
             
-            // ไม่ต้องมี if/return เพราะ CSS (pointer-events: none) บล็อกการคลิกที่ Booked แล้ว
+            alert(alertMessage);
+            return; // หยุดการทำงานถ้าจองแล้ว
             
+        } else { 
+            // *** ✅ สถานะว่าง หรือ โหลดสถานะไม่สำเร็จ: เปิด Modal ให้จอง ✅ ***
             try {
                 selectedSeat = seat;
                 const seatId = selectedSeat.getAttribute('data-seat-id'); 
-                const deskId = selectedSeat.closest('.desk').getAttribute('data-desk-id'); 
+                const deskElement = selectedSeat.closest('.desk'); 
+                const deskId = deskElement ? deskElement.getAttribute('data-desk-id') : 'N/A'; 
 
                 const deskInfo = `โต๊ะที่ ${deskId} ตำแหน่ง ${seatId}`;
                 currentDeskInfoStep1.textContent = deskInfo;
                 currentDeskInfoStep2.textContent = deskInfo;
+                
+                // *** คำสั่งที่สำคัญที่สุด: สั่งให้ Modal แสดงผล ***
+                modal.style.display = 'block';
+
+            } catch (error) {
+                console.error("เกิดข้อผิดพลาดในการเปิดฟอร์ม:", error);
+            }
+        }
+    });
+});
+
+// ... โค้ดเดิมที่เหลือ ...
+
                 
                 // เปิด Modal และแสดงหน้ากรอกข้อมูลก่อน
                 transferDetails.style.display = 'none';
