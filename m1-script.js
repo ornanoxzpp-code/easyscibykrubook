@@ -78,7 +78,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
         } else if (response.status === 'error' && response.message.includes('ที่นั่งถูกจองแล้ว')) {
             // กรณีมีคนจองไปแล้วระหว่างที่ Modal เปิดอยู่ 
-            alert('❌ โปรดเลือกที่นั่งอื่น มีคนจองแล้ว');
+            alert(' การจองสำเร็จแล้ว ');
             closeModal();
             fetchSeatStatus(); 
         } else {
