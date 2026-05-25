@@ -136,7 +136,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ------------------------------------------------------------------
     // 4. การส่งฟอร์ม (Fetch API)
-    // ------------------------------------------------------------------
     bookingForm.addEventListener('submit', async (e) => {
         e.preventDefault(); 
 
@@ -145,17 +144,20 @@ document.addEventListener('DOMContentLoaded', () => {
         const seatId = selectedSeat.getAttribute('data-seat-id');
         const deskId = selectedSeat.closest('.desk').getAttribute('data-desk-id');
         
+        // ตรงนี้ FormData ดึงค่า name, nickname, classRoom, phone ให้เองอัตโนมัติแล้ว
         const formData = new FormData(bookingForm);
         formData.append('deskId', deskId);
         formData.append('seatId', seatId);
         
-        const submittedName = document.getElementById('name').value;
-        formData.append('name', submittedName);
+        // ⚠️ บรรทัดด้านล่างนี้ (ที่เคยเขียนไว้) ให้ลบทิ้ง หรือไม่ต้องเพิ่มซ้ำครับ 
+        // เพราะ FormData ดึงค่าจาก HTML มาให้แล้วตั้งแต่บรรทัดข้างบน
+        // const submittedName = document.getElementById('name').value;
+        // formData.append('name', submittedName);
 
         try {
             const response = await fetch(APPS_SCRIPT_URL, {
                 method: 'POST',
-                body: formData, 
+                body: formData, // ส่ง formData ทั้งก้อนไปได้เลย
             });
 
             const result = await response.json();
@@ -167,4 +169,3 @@ document.addEventListener('DOMContentLoaded', () => {
             closeModal();
         }
     });
-});
