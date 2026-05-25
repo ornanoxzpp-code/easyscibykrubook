@@ -20,39 +20,35 @@ document.addEventListener('DOMContentLoaded', () => {
     let selectedSeat = null; 
     
     
-    // ------------------------------------------------------------------
-    // 1. ฟังก์ชันดึงสถานะจาก Google Sheet (Real-time update)
-    // ------------------------------------------------------------------
-    const fetchSeatStatus = async () => {
-        try {
-            // ดึงข้อมูลสถานะที่นั่งทั้งหมด (ใช้ JSONP)
-            const response = await fetch(`${APPS_SCRIPT_URL}?callback=handleResponse`);
-            const text = await response.text();
+  // ------------------------------------------------------------------
+// 1. ฟังก์ชันดึงสถานะจาก Google Sheet (Real-time update)
+// ------------------------------------------------------------------
+const fetchSeatStatus = async () => {
+    try {
+        const response = await fetch(`${APPS_SCRIPT_URL}?callback=handleResponse`);
+        const text = await response.text();
 
-            // แยกข้อมูล JSON ออกมา (ตัด callback function name ออก)
-            const jsonString = text.substring(text.indexOf('(') + 1, text.lastIndexOf(')'));
-            const data = JSON.parse(jsonString);
+        const jsonString = text.substring(text.indexOf('(') + 1, text.lastIndexOf(')'));
+        const data = JSON.parse(jsonString);
 
-            // อัปเดตสถานะของที่นั่งบนหน้าเว็บ
-            data.forEach(seatData => {
-                const seatElement = document.querySelector(`.seat[data-seat-id="${seatData['Seat ID']}"]`);
-                if (seatElement) {
-                    seatElement.setAttribute('data-status', seatData['Status']);
-                    if (seatData['Status'] === 'Booked') {
-                        seatElement.setAttribute('data-name', seatData['Name']);
-                    }
+        // อัปเดตสถานะของที่นั่งบนหน้าเว็บ
+        data.forEach(seatData => {
+            const seatElement = document.querySelector(`.seat[data-seat-id="${seatData['Seat ID']}"]`);
+            if (seatElement) {
+                // 🔹 แก้จุดนี้: เปลี่ยนสถานะเป็นตัวพิมพ์เล็กทั้งหมด เพื่อให้ตรงกับ CSS
+                const currentStatus = seatData['Status'].toLowerCase(); 
+                
+                seatElement.setAttribute('data-status', currentStatus);
+                if (currentStatus === 'booked') {
+                    seatElement.setAttribute('data-name', seatData['Name']);
                 }
-            });
+            }
+        });
 
-        } catch (error) {
-            console.error('เกิดข้อผิดพลาดในการดึงสถานะ:', error);
-            // Alert นี้อาจจะเกิดขึ้นถ้า URL ผิด หรือไฟล์ .js ยังไม่อัปเดต
-            // alert("เกิดข้อผิดพลาดในการเชื่อมต่อ กรุณาตรวจสอบ Apps Script URL"); 
-        }
-    };
-    fetchSeatStatus();
-    
-    window.handleResponse = function(data) {}; // Dummy function for JSONP
+    } catch (error) {
+        console.error('เกิดข้อผิดพลาดในการดึงสถานะ:', error);
+    }
+};
 
 
     // ------------------------------------------------------------------
@@ -134,38 +130,34 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // ------------------------------------------------------------------
-    // 4. การส่งฟอร์ม (Fetch API)
-    bookingForm.addEventListener('submit', async (e) => {
-        e.preventDefault(); 
+  // ------------------------------------------------------------------
+// 4. การส่งฟอร์ม (Fetch API)
+// ------------------------------------------------------------------
+bookingForm.addEventListener('submit', async (e) => {
+    e.preventDefault(); 
 
-        if (!selectedSeat) return;
+    if (!selectedSeat) return;
 
-        const seatId = selectedSeat.getAttribute('data-seat-id');
-        const deskId = selectedSeat.closest('.desk').getAttribute('data-desk-id');
-        
-        // ตรงนี้ FormData ดึงค่า name, nickname, classRoom, phone ให้เองอัตโนมัติแล้ว
-        const formData = new FormData(bookingForm);
-        formData.append('deskId', deskId);
-        formData.append('seatId', seatId);
-        
-        // ⚠️ บรรทัดด้านล่างนี้ (ที่เคยเขียนไว้) ให้ลบทิ้ง หรือไม่ต้องเพิ่มซ้ำครับ 
-        // เพราะ FormData ดึงค่าจาก HTML มาให้แล้วตั้งแต่บรรทัดข้างบน
-        // const submittedName = document.getElementById('name').value;
-        // formData.append('name', submittedName);
+    const seatId = selectedSeat.getAttribute('data-seat-id');
+    const deskId = selectedSeat.closest('.desk').getAttribute('data-desk-id');
+    
+    const formData = new FormData(bookingForm);
+    formData.append('deskId', deskId);
+    formData.append('seatId', seatId);
 
-        try {
-            const response = await fetch(APPS_SCRIPT_URL, {
-                method: 'POST',
-                body: formData, // ส่ง formData ทั้งก้อนไปได้เลย
-            });
+    try {
+        const response = await fetch(APPS_SCRIPT_URL, {
+            method: 'POST',
+            // 🔹 แก้จุดนี้: ครอบ formData ด้วย new URLSearchParams() เพื่อแปลงรูปแบบข้อมูลให้ตรงกับที่ Google Script ต้องการ
+            body: new URLSearchParams(formData), 
+        });
 
-            const result = await response.json();
-            window.handleSuccessfulSubmission(result); 
+        const result = await response.json();
+        window.handleSuccessfulSubmission(result); 
 
-        } catch (error) {
-            console.error("Error submitting form:", error);
-            alert("เกิดข้อผิดพลาดในการเชื่อมต่อ กรุณาลองใหม่อีกครั้ง");
-            closeModal();
-        }
-    });
+    } catch (error) {
+        console.error("Error submitting form:", error);
+        alert("เกิดข้อผิดพลาดในการเชื่อมต่อ กรุณาลองใหม่อีกครั้ง");
+        closeModal();
+    }
+});
